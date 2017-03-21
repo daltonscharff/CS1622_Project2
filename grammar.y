@@ -344,8 +344,7 @@ Expression 							:	SimpleExpression
 
 SimpleExpression					:	Term SimpleExpression_recursive
 										{
-										// this one is confusing, I want to create a tree, but 
-										// I do not know what operator type to use;
+											$$ = MkLeftC($1, $2);
 										}
 									|	PLUSnum Term SimpleExpression_recursive
 										{
@@ -375,7 +374,7 @@ SimpleExpression_recursive			:	/* Epsilon */
 
 Term								:	Factor Term_recursive
 										{
-											
+											$$ = MkLeftC($1, $2);
 										};
 
 Term_recursive						:	/* Epsilon */
