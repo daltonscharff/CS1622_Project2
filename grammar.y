@@ -17,18 +17,13 @@
 
 %% /* yacc specification */
 
-Program 							:	PROGRAMnum IDnum SEMInum ClassDecl_recursive
+Program 							:	PROGRAMnum IDnum SEMInum Program_recursive
 										{
 											$$ = MakeTree(ProgramOp, $4, MakeLeaf(IDNode, $2));
 											printtree($$, 0);
 										};
 
-ClassDecl							:	CLASSnum IDnum ClassBody
-										{
-											$$ = MakeTree(ClassDefOp, $3, MakeLeaf(IDNode, $2));
-										};
-
-ClassDecl_recursive					:	ClassDecl
+Program_recursive					:	ClassDecl
 										{
 											$$ = MakeTree(ClassOp, NullExp(), $1);
 										}
@@ -36,7 +31,15 @@ ClassDecl_recursive					:	ClassDecl
 										{
 											$$ = MakeTree(ClassOp, $1, $2);
 										};
-// I think this should work
+
+
+
+ClassDecl							:	CLASSnum IDnum ClassBody
+										{
+											$$ = MakeTree(ClassDefOp, $3, MakeLeaf(IDNode, $2));
+										};
+
+
 ClassBody							:	LBRACEnum ClassBody_Decls ClassBody_MethodDecl RBRACEnum
 										{
 											$$ = MakeTree(BodyOp, $2, $3);
@@ -44,7 +47,9 @@ ClassBody							:	LBRACEnum ClassBody_Decls ClassBody_MethodDecl RBRACEnum
 
 ClassBody_Decls						:	/* Epsilon */
 										{
-											$$ = NullExp();	
+
+											$$ = NullExp();
+
 										}
 									|	Decls
 										{
@@ -158,7 +163,7 @@ ArrayCreationExpression				:	INTnum ArrayCreationExpression_recursive
 
 ArrayCreationExpression_recursive	:	LBRACnum Expression RBRACnum
 										{
-
+											$$ = $2;
 										}
 									|	LBRACnum Expression RBRACnum ArrayCreationExpression_recursive
 										{
@@ -176,7 +181,7 @@ MethodDecl 							:	METHODnum Type IDnum LPARENnum FormalParameterList RPARENnum
 
 FormalParameterList					:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	VALnum INTnum FormalParameterList_IDnum FormalParameterList_recursive
 										{
@@ -194,7 +199,7 @@ FormalParameterList_IDnum			:	IDnum
 
 FormalParameterList_recursive		:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										};
 									|	SEMInum FormalParameterList
 										{
@@ -269,7 +274,12 @@ Statement 							:	/* Epsilon */
 
 AssignmentStatement					:	Variable ASSGNnum Expression
 										{
-											$$ = MakeTree(AssignOp, $1, $3); //missing something
+
+				
+
+											tree temp = MakeTree(AssignOp, NullExp(), $1);
+											$$ = MakeTree(AssignOp, temp, $3);
+
 										};
 
 MethodCallStatement					:	Variable LPARENnum MethodCallStatement_recursive RPARENnum
@@ -287,7 +297,10 @@ MethodCallStatement_recursive		:	/* Epsilon */
 										}
 									|	MethodCallStatement COMMAnum Expression
 										{
-											$$ = MakeTree(CommaOp, $3, $1);
+										
+
+											$$ = MakeTree(CommaOp, $1, $3);
+
 										};
 
 ReturnStatement						:	RETURNnum Expression
