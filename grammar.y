@@ -17,24 +17,24 @@
 
 %% /* yacc specification */
 
-Program 							:	PROGRAMnum IDnum SEMInum ClassDecl_recursive
+Program 							:	PROGRAMnum IDnum SEMInum Program_recursive
 										{
 											$$ = MakeTree(ProgramOp, $4, MakeLeaf(IDNode, $2));
 											printtree($$, 0);
 										};
-
-ClassDecl							:	CLASSnum IDnum ClassBody
-										{
-											$$ = MakeTree(ClassDefOp, $3, MakeLeaf(IDNode, $2));
-										};
-
-ClassDecl_recursive					:	ClassDecl
+										
+Program_recursive					:	ClassDecl
 										{
 											$$ = MakeTree(ClassOp, NullExp(), $1);
 										}
 									|	ClassDecl_recursive ClassDecl
 										{
 											$$ = MakeTree(ClassOp, $1, $2);
+										};
+
+ClassDecl							:	CLASSnum IDnum ClassBody
+										{
+											$$ = MakeTree(ClassDefOp, $3, MakeLeaf(IDNode, $2));
 										};
 
 ClassBody							:	LBRACEnum ClassBody_Decls ClassBody_MethodDecl RBRACEnum
