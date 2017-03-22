@@ -22,7 +22,7 @@ Program 							:	PROGRAMnum IDnum SEMInum Program_recursive
 											$$ = MakeTree(ProgramOp, $4, MakeLeaf(IDNode, $2));
 											printtree($$, 0);
 										};
-										
+
 Program_recursive					:	ClassDecl
 										{
 											$$ = MakeTree(ClassOp, NullExp(), $1);
@@ -44,7 +44,7 @@ ClassBody							:	LBRACEnum ClassBody_Decls ClassBody_MethodDecl RBRACEnum
 
 ClassBody_Decls						:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	Decls
 										{
@@ -53,7 +53,7 @@ ClassBody_Decls						:	/* Epsilon */
 
 ClassBody_MethodDecl				:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	MethodDecl
 										{
@@ -115,7 +115,7 @@ VariableDeclID						:	IDnum
 
 VariableDeclID_recursive			:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	LBRACnum RBRACnum VariableDeclID_recursive
 										{
@@ -156,7 +156,7 @@ ArrayCreationExpression				:	INTnum ArrayCreationExpression_recursive
 
 ArrayCreationExpression_recursive	:	LBRACnum Expression RBRACnum
 										{
-
+											$$ = $2;
 										}
 									|	LBRACnum Expression RBRACnum ArrayCreationExpression_recursive
 										{
@@ -174,7 +174,7 @@ MethodDecl 							:	METHODnum Type IDnum LPARENnum FormalParameterList RPARENnum
 
 FormalParameterList					:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	VALnum INTnum FormalParameterList_IDnum FormalParameterList_recursive
 										{
@@ -192,7 +192,7 @@ FormalParameterList_IDnum			:	IDnum
 
 FormalParameterList_recursive		:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										};
 									|	SEMInum FormalParameterList
 										{
@@ -215,7 +215,7 @@ Type								:	IDnum Type_brackets
 
 Type_brackets						:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	LBRACnum RBRACnum Type_brackets
 										{
@@ -228,7 +228,7 @@ Type_brackets						:	/* Epsilon */
 
 StatementList						:	LBRACEnum StatementList_recursive RBRACEnum
 										{
-
+											$$ = $2;
 										};
 
 StatementList_recursive				:	Statement
@@ -242,50 +242,51 @@ StatementList_recursive				:	Statement
 
 Statement 							:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	AssignmentStatement
 										{
-
+											$$ = $1;
 										}
 									|	MethodCallStatement
 										{
-											
+											$$ = $1;
 										}
 									|	ReturnStatement
 										{
-											
+											$$ = $1;
 										}
 									|	IfStatement
 										{
-											
+											$$ = $1;
 										}
 									|	WhileStatement
 										{
-											
+											$$ = $1;
 										};
 
 AssignmentStatement					:	Variable ASSGNnum Expression
 										{
-
+											tree temp = MakeTree(AssignOp, NullExp(), $1);
+											$$ = MakeTree(AssignOp, temp, $3);
 										};
 
 MethodCallStatement					:	Varaible LPARENnum MethodCallStatement_recursive RPARENnum
 										{
-
+											$$ = MakeTree(RoutineCallOp, $1, $3);
 										};
 
 MethodCallStatement_recursive		:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	Expression
 										{
-
+											$$ = MakeTree(CommaOp, $1, NullExp());
 										}
 									|	MethodCallStatement COMMAnum Expression
 										{
-
+											$$ = MakeTree(CommaOp, $1, $3);
 										};
 
 ReturnStatement						:	RETURNnum Expression
@@ -377,7 +378,7 @@ Term								:	Factor Term_recursive
 
 Term_recursive						:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	TIMESnum Factor Term_recursive
 										{
@@ -429,7 +430,7 @@ Variable 							:	IDnum Variable_recursive
 
 Variable_recursive 					:	/* Epsilon */
 										{
-
+											$$ = NullExp();
 										}
 									|	LBRACnum Variable_expression RBRACnum Variable_recursive
 										{
@@ -442,7 +443,7 @@ Variable_recursive 					:	/* Epsilon */
 
 Variable_expression					:	Expression
 										{
-
+											$$ = $1;
 										}
 									|	Variable_expression COMMAnum Expression
 										{
