@@ -9,11 +9,14 @@
 %token <intg> EQnum GEnum ICONSTnum IFnum LBRACEnum LEnum LTnum MINUSnum NOTnum PLUSnum
 %token <intg> RBRACEnum RETURNnum SCONSTnum TIMESnum VOIDnum
 
-%type <tptr> Program ClassDecl ClassBody Decls FieldDecl VariableDeclld VariableInitializer
-%type <tptr> ArrayInitializer ArrayCreationExpression MethodDecl FormalParameterList Block Type
-%type <tptr> StatementList Statement AssignmentStatement MethodCallStatement ReturnStatement 
-%type <tptr> IfStatementd WhileStatement Expression SimpleExpression Term Factor UnsignedConstant
-%type <tptr> Variable
+%type <tptr> Program Program_recursive ClassDecl ClassBody ClassBody_Decls ClassBody_MethodDecl Decls
+%type <tptr> Decls_recursive FieldDecl FieldDecl_recursive VariableDeclld VariableDeclID_recursive 
+%type <tptr> VariableInitializer ArrayInitializer ArrayInitializer_recursive ArrayCreationExpression 
+%type <tptr> ArrayCreationExpression_recursive MethodDecl FormalParameterList FormalParameterList_IDnum 
+%type <tptr> FormalParameterList_recursive Block Type Type_brackets StatementList StatementList_recursive 
+%type <tptr> Statement AssignmentStatement MethodCallStatement MethodCallStatement_recursive ReturnStatement 
+%type <tptr> IfStatement WhileStatement Expression SimpleExpression SimpleExpression_recursive Term 
+%type <tptr> Term_recursive Factor UnsignedConstant Variable Variable_recursive Variable_expression
 
 %% /* yacc specification */
 
@@ -21,7 +24,8 @@ Program 							:	PROGRAMnum IDnum SEMInum Program_recursive
 										{
 											$$ = MakeTree(ProgramOp, $4, MakeLeaf(IDNode, $2));
 											printtree($$, 0);
-										};
+										}
+									;
 
 Program_recursive					:	ClassDecl
 										{
@@ -30,20 +34,23 @@ Program_recursive					:	ClassDecl
 									|	ClassDecl_recursive ClassDecl
 										{
 											$$ = MakeTree(ClassOp, $1, $2);
-										};
+										}
+									;
 
 
 
 ClassDecl							:	CLASSnum IDnum ClassBody
 										{
 											$$ = MakeTree(ClassDefOp, $3, MakeLeaf(IDNode, $2));
-										};
+										}
+									;
 
 
 ClassBody							:	LBRACEnum ClassBody_Decls ClassBody_MethodDecl RBRACEnum
 										{
 											$$ = MakeTree(BodyOp, $2, $3);
-										};
+										}
+									;
 
 ClassBody_Decls						:	/* Epsilon */
 										{
@@ -54,7 +61,8 @@ ClassBody_Decls						:	/* Epsilon */
 									|	Decls
 										{
 
-										};
+										}
+									;
 
 ClassBody_MethodDecl				:	/* Epsilon */
 										{
@@ -67,12 +75,14 @@ ClassBody_MethodDecl				:	/* Epsilon */
 									|	ClassBody_recursive MethodDecl
 										{
 											$$ = MakeTree(BodyOp, $1, $2); // I think this could be wrong
-										};
+										}
+									;
 
 Decls 								:	DECLARATIONSnum Decls_recursive ENDDECLARATIONSnum
 										{
 											$$ = $2;
-										};
+										}
+									;
 
 Decls_recursive						:	FieldDecl
 										{
@@ -81,22 +91,20 @@ Decls_recursive						:	FieldDecl
 									|	Decls_recursive FieldDecl
 										{
 											$$ = MakeTree(BodyOp, $1, $2);
-										};
+										}
+									;
 
-FieldDecl 							: 	Type FieldDecl_recursive
+FieldDecl 							: 	Type FieldDecl_recursive SEMInum
 										{
-										
-										};
+											$$ = $2;
+										}
+									;
 
-FieldDecl_recursive					:	SEMInum
+FieldDecl_recursive					:	VariableDeclID EQUALnum VariableInitializer COMMAnum FieldDecl_recursive
 										{
 
 										}
-									|	VariableDeclID EQUALnum VariableInitializer COMMAnum FieldDecl_recursive
-										{
-
-										}
-									|	VariableDeclID EQUALnum VariableInitializer SEMInum
+									|	VariableDeclID EQUALnum VariableInitializer
 										{
 
 										}
@@ -104,10 +112,11 @@ FieldDecl_recursive					:	SEMInum
 										{
 
 										}
-									|	VariableDeclID SEMInum
+									|	VariableDeclID
 										{
 
-										};
+										}
+									;
 
 VariableDeclID						:	IDnum
 										{
@@ -115,18 +124,19 @@ VariableDeclID						:	IDnum
 										}
 									|	IDnum LBRACnum RBRACnum VariableDeclID_recursive
 										{
-											$$ = MakeLeaf(IDNode, $1); // not sure what to do with the
-											//recursion
-										};
+											$$ = MakeLeaf(IDNode, $1);
+										}
+									;
 
 VariableDeclID_recursive			:	/* Epsilon */
 										{
-											$$ = NullExp();
+											$$ = $$;
 										}
 									|	LBRACnum RBRACnum VariableDeclID_recursive
 										{
-
-										};
+											$$ = $$;
+										}
+									;
 
 //May be too simple, could be wrong;
 VariableInitializer					:	Expression
@@ -140,26 +150,31 @@ VariableInitializer					:	Expression
 									|	ArrayCreationExpression
 										{
 											$$ = $1;
-										};
+										}
+									;
 
 ArrayInitializer					: 	LBRACEnum ArrayInitializer_recursive RBRACEnum
 										{
-						
-										};
+											
+										}
+									;
 
 ArrayInitializer_recursive			:	VariableInitializer
 										{
 
-										};
+										}
+									;
 									|	VariableInitializer_rec COMMAnum VariableInitializer
 										{
 
-										};
+										}
+									;
 
 ArrayCreationExpression				:	INTnum ArrayCreationExpression_recursive
 										{
 
-										};
+										}
+									;
 
 ArrayCreationExpression_recursive	:	LBRACnum Expression RBRACnum
 										{
@@ -168,7 +183,8 @@ ArrayCreationExpression_recursive	:	LBRACnum Expression RBRACnum
 									|	LBRACnum Expression RBRACnum ArrayCreationExpression_recursive
 										{
 
-										};
+										}
+									;
 
 MethodDecl 							:	METHODnum Type IDnum LPARENnum FormalParameterList RPARENnum Block
 										{
@@ -177,7 +193,8 @@ MethodDecl 							:	METHODnum Type IDnum LPARENnum FormalParameterList RPARENnum
 									|	METHODnum VOIDnum IDnum LPARENnum FormalParameterList RPARENnum Block
 										{
 
-										};
+										}
+									;
 
 FormalParameterList					:	/* Epsilon */
 										{
@@ -195,21 +212,25 @@ FormalParameterList_IDnum			:	IDnum
 									|	FormalParameterList_IDnum COMMAnum IDnum
 										{
 
-										};
+										}
+									;
 
 FormalParameterList_recursive		:	/* Epsilon */
 										{
 											$$ = NullExp();
-										};
+										}
+									;
 									|	SEMInum FormalParameterList
 										{
 
-										};
+										}
+									;
 
 Block								:	Decls StatementList
 										{
 											$$ = MakeTree(BodyOp, $1, $2);
-										};
+										}
+									;
 
 Type								:	IDnum Type_brackets
 										{
@@ -218,7 +239,8 @@ Type								:	IDnum Type_brackets
 									|	INTnum Type_brackets
 										{
 
-										};
+										}
+									;
 
 Type_brackets						:	/* Epsilon */
 										{
@@ -231,21 +253,25 @@ Type_brackets						:	/* Epsilon */
 									|	LBRACnum RBRACnum DOTnum Type 
 										{
 
-										};
+										}
+									;
 
 StatementList						:	LBRACEnum StatementList_recursive RBRACEnum
 										{
 											$$ = $2;
-										};
+										}
+									;
 
 StatementList_recursive				:	Statement
 										{
 											$$ = $1;
-										};
+										}
+									;
 									|	StatementList_recursive SEMInum Statement
 										{
 											$$ = MakeTree(StmtOp, $1, $3);
-										};
+										}
+									;
 
 Statement 							:	/* Epsilon */
 										{
@@ -270,22 +296,22 @@ Statement 							:	/* Epsilon */
 									|	WhileStatement
 										{
 											$$ = $1;
-										};
+										}
+									;
 
 AssignmentStatement					:	Variable ASSGNnum Expression
 										{
-
-				
-
 											tree temp = MakeTree(AssignOp, NullExp(), $1);
 											$$ = MakeTree(AssignOp, temp, $3);
 
-										};
+										}
+									;
 
 MethodCallStatement					:	Variable LPARENnum MethodCallStatement_recursive RPARENnum
 										{
 											$$ = MakeTree(RoutineCallOp, $1, $3);
-										};
+										}
+									;
 
 MethodCallStatement_recursive		:	/* Epsilon */
 										{
@@ -297,16 +323,15 @@ MethodCallStatement_recursive		:	/* Epsilon */
 										}
 									|	MethodCallStatement COMMAnum Expression
 										{
-										
-
 											$$ = MakeTree(CommaOp, $1, $3);
-
-										};
+										}
+									;
 
 ReturnStatement						:	RETURNnum Expression
 										{
 											$$ = MakeTree(ReturnOp, $2, NullExp());
-										};
+										}
+									;
 
 IfStatement							:	IFnum Expression StatementList
 										{
@@ -319,12 +344,14 @@ IfStatement							:	IFnum Expression StatementList
 									|	IFnum Expression StatementList ELSEnum StatementList
 										{
 
-										};
+										}
+									;
 
 WhileStatement						:	WHILEnum Expression StatementList
 										{
 											$$ = MakeTree(LoopOp,$2,$3);
-										};
+										}
+									;
 
 Expression 							:	SimpleExpression
 										{
@@ -353,7 +380,8 @@ Expression 							:	SimpleExpression
 									|	SimpleExpression GTnum SimpleExpression
 										{
 											$$ = MakeTree(GTOp, $1, $3);
-										};
+										}
+									;
 
 SimpleExpression					:	Term SimpleExpression_recursive
 										{
@@ -366,7 +394,8 @@ SimpleExpression					:	Term SimpleExpression_recursive
 									|	MINUSnum Term SimpleExpression_recursive
 										{
 											$$ = MakeTree(SubOp, $3, $2);
-										};
+										}
+									;
 
 SimpleExpression_recursive			:	/* Epsilon */
 										{
@@ -383,12 +412,14 @@ SimpleExpression_recursive			:	/* Epsilon */
 									|	ORnum Term SimpleExpression_recursive
 										{
 											$$ = MakeTree(OrOp, $3, $2);
-										};
+										}
+									;
 
 Term								:	Factor Term_recursive
 										{
 											$$ = MkLeftC($1, $2);
-										};
+										}
+									;
 
 Term_recursive						:	/* Epsilon */
 										{
@@ -405,7 +436,8 @@ Term_recursive						:	/* Epsilon */
 									|	ANDnum Factor Term_recursive
 										{
 											$$ = MakeTree(AndOp, $3, $2);
-										};
+										}
+									;
 
 Factor								:	UnsignedConstant
 										{
@@ -426,7 +458,8 @@ Factor								:	UnsignedConstant
 									|	NOTnum Factor
 										{
 											$$ = MakeTree(NotOp, $2, NullExp());
-										};
+										}
+									;
 
 UnsignedConstant					:	ICONSTnum
 										{
@@ -435,12 +468,14 @@ UnsignedConstant					:	ICONSTnum
 									|	SCONSTnum
 										{
 											$$ = MakeLeaf(STRINGNode, $1);
-										};
+										}
+									;
 //I think this is correct
 Variable 							:	IDnum Variable_recursive 
 										{
 											$$ = MakeTree(VarOp,MakeLeaf(IDNode, $1), $2);
-										};
+										}
+									;
 //I think this is correct
 Variable_recursive 					:	/* Epsilon */
 										{
@@ -453,7 +488,8 @@ Variable_recursive 					:	/* Epsilon */
 									|	DOTnum IDnum Variable_recursive
 										{
 											$$ = MakeTree(FieldOp, $2, $3);
-										};
+										}
+									;
 
 //guess
 Variable_expression					:	Expression
@@ -462,8 +498,10 @@ Variable_expression					:	Expression
 										}
 									|	Variable_expression COMMAnum Expression
 										{
-											// I do not get this one
-										};
+											// ?? Maybe this will work ??
+											$$ = MakeTree(IndexOp, $1, MakeTree(IndexOP, $3, NullExp()));
+										}
+									;
 
 %% /* C code */
 
