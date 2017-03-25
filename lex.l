@@ -1,12 +1,13 @@
 %{
 #include <stdlib.h>
 #include <string.h>
+#include "y.tab.h"
 
 #define LIMIT1 500
 
 extern int yycolumn, yylength, yyline;
 extern YYSTYPE yylval;
-extern char strg_tbl[LIMIT1];
+extern char symbolTable[LIMIT1];
 int st_index;
 int pos();
 char * tolowercase(char a[]);
@@ -132,7 +133,7 @@ BADIDnum				{digit}({letter}|{digit})*
 
 %%
 YYSTYPE yylval;
-char strg_tbl[LIMIT1];
+char symbolTable[LIMIT1];
 int yyline = 1;
 int yycolumn = 1;
 int st_index = 0;
@@ -206,8 +207,8 @@ void print_string_table() {
 	int i;
 	printf("Symbol Table: ");
 	for (i = 0; i < st_index; i++) {
-		while (strg_tbl[i] != '\0') {
-			printf("%c", strg_tbl[i]);
+		while (symbolTable[i] != '\0') {
+			printf("%c", symbolTable[i]);
 			i++;
 		}
 		printf("%c", ' ');
@@ -249,7 +250,7 @@ int insert(char a[]) {
 		return -1;
 	}
 	/* Copy the string into the table */
-	strcpy(&(strg_tbl[st_index]), a);
+	strcpy(&(symbolTable[st_index]), a);
 	/* Set new end index and return there the string was inserted */
 	int temp = st_index;
 	st_index += strlen(a) + 1;
@@ -260,9 +261,9 @@ int insert(char a[]) {
 int search(char a[]) {
 	int i = 0;
 	char word[LIMIT1];
-	strg_tbl[LIMIT1] = '\0';
+	symbolTable[LIMIT1] = '\0';
 	while (i < LIMIT1) {
-		strcpy(&word[0], &(strg_tbl[i]));
+		strcpy(&word[0], &(symbolTable[i]));
 		if (!strcasecmp(word, a)) {
 			return i;
 		}
