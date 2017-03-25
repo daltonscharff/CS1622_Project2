@@ -1,0 +1,16 @@
+	Files:   lex.l      //input of lex
+		 table.c    //hash table and string table
+                 token.h    //defines token numbers
+                 lexdrv.c   //temporary driver
+		 Makefile   //make file
+	Executable file:
+		 go
+        Note:
+		Comments in this form is treated as correct:
+                  /*....../*........*/
+                  ^------------------^match
+		Nested comments are considered as:
+                  /*....../*........*/........*/
+                  ^------------------^---------^
+				     match      comment with no beginning
+                 
