@@ -1,7 +1,7 @@
 %{
 #include <stdlib.h>
 #include <string.h>
-#include "token.h"
+
 
 #define LIMIT1 500
 extern int yycolumn, yyleng, yyline;
@@ -92,10 +92,10 @@ NEWLINE       [\n]
 {BADID}	{yycolumn+=yyleng; char *err = "ID"; reportError(err);}
 %%
 
-
+YYSTYPE yylval;
 int yyline =0;
 int yycolumn = 0;
-char strg_tbl[LIMIT1 + 1];//string table
+char symbolTable[LIMIT1 + 1];//string table
 int sIndex = 0; //Index to keep track of string constants in string table
 int searchIndex = 0; //search index for string table
 
@@ -118,13 +118,14 @@ void reportError(char err[]){
 int Find(char s[]){
 	int i = 0;
 	char word[LIMIT1];
+	symbolTable[LIMIT1] = '\0';
 	while(i < LIMIT1){
-		strcpy(&word[0], &strg_tbl[i]);
+		strcpy(&word[0], &symbolTable[i]);
 		//compares word in string table with string s
-		if(strcasecmp(word, s)){
+		if(!strcasecmp(word, s)){
 			return i;
 		}else{
-			i += strlen(word);
+			i = i + strlen(word);
 		}
 		i++;
 	}
@@ -149,7 +150,7 @@ int insert(char s[]){
 		printf("Not enough space in string table.");
 		return -1;
 	}
-	strcpy(&strg_tbl[sIndex], s);
+	strcpy(&symbolTable[sIndex], s);
 	int temp = sIndex;
 	sIndex += strlen(s) + 1;
 	return temp;
@@ -175,8 +176,8 @@ void printTable(){
 	printf("String Table : ");
 	int i;
 	for(i = 0; i < sIndex; i++){
-		while(strg_tbl[i] != '\0'){
-				printf("%c", strg_tbl[i]);
+		while(symbolTable[i] != '\0'){
+				printf("%c", symbolTable[i]);
 				i++;
 		}
 		printf("%c", ' ');
