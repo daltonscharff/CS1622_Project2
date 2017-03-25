@@ -15,6 +15,9 @@ Aggelos Varvitsiotis.
 /*	define syntax tree node and pointer type	*/
 #include <stdio.h>
 #include "proj2.h"
+#include <stdlib.h>
+
+
 
 ILTree dummy = { DUMMYNode, 0, 0, 0, 0 };
  
