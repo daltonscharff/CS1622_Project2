@@ -18,7 +18,7 @@
 %type <tptr> Variable ClassDecl_recursive ClassBody_Decls ClassBody_MethodDecl
 %type <tptr> Decls_recursive VariableDeclID VariableDeclID_recursive
 %type <tptr> ArrayCreationExpression_recursive FormalParameterList_recursive Type_rec
-%type <tptr> StatementList_recursive IfStatement MethodCallStatement_recursive SimpleExpression_recursive
+%type <tptr> StatementList_recursive MethodCallStatement_recursive SimpleExpression_recursive
 %type <tptr> Term_recursive Variable_recursive Variable_expression FieldDecl_recursive
 %type <tptr> ArrayInitializer_recursive 
 
