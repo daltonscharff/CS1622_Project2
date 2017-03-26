@@ -336,7 +336,8 @@ void zerocrosses ()
 }
 
 extern char  symbolTable[];
-
+/* Rather than modifying the following code, I changed my lex file, so that getname(int i) and getstring(int i)
+can be used */
 char* getname(int i)/*return ID name or String, i is the index of the string table, passed through yylval*/
 {
   return( symbolTable+i );/*return string table indexed at i*/
