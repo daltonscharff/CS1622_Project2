@@ -14,12 +14,12 @@
 %type <tptr> ArrayInitializer ArrayCreationExpression MethodDecl FormalParameterList Block Type
 %type <tptr> StatementList Statement AssignmentStatement MethodCallStatement ReturnStatement 
 %type <tptr> IfStatement WhileStatement Expression SimpleExpression Term Factor UnsignedConstant
-%type <tptr> Variable ClassDecl_recursive ClassBody_Decls ClassBody_MethodDecl
+%type <tptr> Variable ClassDecl_recursive ClassBody_MethodDecl 
 %type <tptr> Decls_recursive VariableDeclID VariableDeclID_recursive FieldDeclId	
 %type <tptr> ArrayCreationExpression_recursive FormalParameterList_recursive Type_rec
 %type <tptr> StatementList_recursive MethodCallStatement_recursive SimpleExpression_recursive
 %type <tptr> Term_recursive Variable_recursive Variable_expression FieldDecl_recursive
-%type <tptr> ArrayInitializer_recursive FormalParameter FormalParameter_recursive 
+%type <tptr> ArrayInitializer_recursive FormalParameter FormalParameter_recursive MethodDecl_z1
 
 
 
@@ -50,7 +50,6 @@ ClassDecl							:	CLASSnum IDnum ClassBody
 
 ClassBody							:	LBRACEnum Decls ClassBody_MethodDecl RBRACEnum
 										{
-											/*$$ = MakeTree(BodyOp, $2, $3);*/
 											if ($3 == NullExp()) { /* this is blester's code*/
 												$$ = $2;
 											}
@@ -60,18 +59,22 @@ ClassBody							:	LBRACEnum Decls ClassBody_MethodDecl RBRACEnum
 										};
 
 
-ClassBody_MethodDecl				:	MethodDecl /*difference blester had methoddecl_z1 and another nonterminal called methoddecl*/
+ClassBody_MethodDecl				:	MethodDecl_z1 /* blester */
 										{
-											if($1 == NullExp())
-											{
-												$$ = NullExp();
-											} else {
-											$$ = MakeTree(BodyOp, NullExp(), $1);
-											}
+											$$ = $1;
 										}
 									|	ClassBody_MethodDecl MethodDecl // I think this is causing the shift reduce conflict
 										{
 											$$ = MakeTree(BodyOp, $1, $2); 
+										};
+										
+MethodDecl_z1						:	/*Epsilon */
+										{
+											$$ = NullExp();
+										}
+									|	 MethodDecl
+										{
+											$$ = MakeTree(BodyOp, NullExp(), $1);
 										};
 
 Decls 								:	/* Epsilon */
@@ -88,10 +91,6 @@ Decls_recursive						:	/* Epsilon */
 										{
 											$$ = NullExp();
 										}
-									|	Epsilon
-										{
-											$$ = MakeTree(BodyOp, NullExp(), NullExp());
-										}
 									|	FieldDecl
 										{
 											$$ = MakeTree(BodyOp, NullExp(), $1);
@@ -101,7 +100,7 @@ Decls_recursive						:	/* Epsilon */
 											$$ = MakeTree(BodyOp, $1, $2);
 										};
 
-FieldDecl 							: 	Type FieldDecl_recursive
+FieldDecl 							: 	Type FieldDecl_recursive SEMInum 
 										{
 											$$ = $2; 
 										};
@@ -134,11 +133,7 @@ VariableDeclID						:	IDnum
 											$$ = MakeLeaf(IDNode, $1); 
 										};
 
-VariableDeclID_recursive			:	/* Epsilon */
-										{
-											$$ = NullExp();
-										}
-									|	LBRACnum RBRACnum VariableDeclID_recursive
+VariableDeclID_recursive			:	VariableDeclID_recursive LBRACnum RBRACnum 
 										{
 											$$ = $$;
 										}
@@ -182,22 +177,22 @@ ArrayCreationExpression				:	INTnum ArrayCreationExpression_recursive
 
 ArrayCreationExpression_recursive	:	LBRACnum Expression RBRACnum
 										{
-											$$ = $2;
+											$$ = MakeTree(BoundOp, NullExp(), $2);
 										}
-									|	LBRACnum Expression RBRACnum ArrayCreationExpression_recursive
+									|	ArrayCreationExpression_recursive LBRACnum Expression RBRACnum 
 										{
-											$$ = MakeTree(BoundOp, $4, $2);
+											$$ = MakeTree(BoundOp, $1, $3);
 										};
 
 MethodDecl 							:	METHODnum Type IDnum LPARENnum FormalParameterList RPARENnum Block
 										{
-											tree head = MakeTree(HeadOp, MakeLeaf(IDNode, $3), $5);
-											$$ = MakeTree(MethodOp, head, $7);
+											tree temp = MakeTree(HeadOp, MakeLeaf(IDNode, $3), $5);
+											$$ = MakeTree(MethodOp, temp, $7);
 										}
 									|	METHODnum VOIDnum {tree_type = NullExp();}IDnum LPARENnum FormalParameterList RPARENnum Block
 										{
-											tree head = MakeTree(HeadOp, MakeLeaf(IDNode, $4), $6);
-											$$ = MakeTree(MethodOp, head, $8);
+											tree temp = MakeTree(HeadOp, MakeLeaf(IDNode, $4), $6);
+											$$ = MakeTree(MethodOp, temp, $8);
 										};
 
 FormalParameterList					:	/* Epsilon */
@@ -235,8 +230,8 @@ FormalParameter_recursive			:	IDnum
 									|	IDnum COMMAnum FormalParameter_recursive
 										{
 											tree temp = MakeTree(CommaOp, MakeLeaf(IDNode, $1), MakeLeaf(INTEGERTNode, 0));
-											tree fp = MakeTree(RArgTypeOp, temp, NullExp());
-											$$ = MkRightC($3, fp);
+											tree temp2 = MakeTree(RArgTypeOp, temp, NullExp());
+											$$ = MkRightC($3, temp2);
 										};
 
 Block								:	Decls StatementList
@@ -280,7 +275,7 @@ Type_rec							:	/* Epsilon */
 										}
 									|	Type_rec LBRACnum RBRACnum
 										{
-											MakeTree(IndexOp, NullExp(), $1);
+											$$ = tree_type = MakeTree(IndexOp, NullExp(), $1);
 										};
 
 StatementList						:	LBRACEnum StatementList_recursive RBRACEnum
@@ -288,11 +283,7 @@ StatementList						:	LBRACEnum StatementList_recursive RBRACEnum
 											$$ = $2;
 										};
 
-StatementList_recursive				:	/* Episilon */
-										{
-											$$ = NullExp();
-										}
-									|	Statement
+StatementList_recursive				:	Statement
 										{
 											$$ = MakeTree(StmtOp, NullExp(), $1);
 										};
@@ -383,7 +374,7 @@ IfStatement							:	IFnum Expression StatementList
 
 WhileStatement						:	WHILEnum Expression StatementList
 										{
-											$$ = MakeTree(LoopOp,$2,$3);
+											$$ = MakeTree(LoopOp, $2, $3);
 										};
 
 Expression 							:	SimpleExpression
@@ -448,7 +439,7 @@ SimpleExpression_recursive			:	/* Epsilon */
 									|	PLUSnum Term SimpleExpression_recursive
 										{
 											//$$ = MakeTree(AddOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(AddOp, NullExp(), $2);
 											} else {
@@ -459,7 +450,7 @@ SimpleExpression_recursive			:	/* Epsilon */
 									|	MINUSnum Term SimpleExpression_recursive
 										{
 											//$$ = MakeTree(SubOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(SubOp, NullExp(), $2);
 											} else {
@@ -470,7 +461,7 @@ SimpleExpression_recursive			:	/* Epsilon */
 									|	ORnum Term SimpleExpression_recursive
 										{
 										//	$$ = MakeTree(OrOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(OrOp, NullExp(), $2);
 											} else {
@@ -481,7 +472,6 @@ SimpleExpression_recursive			:	/* Epsilon */
 
 Term								:	Factor Term_recursive
 										{
-										//	$$ = MkLeftC($1, $2); /* github code */
 											if ($2 == NullExp()) {
 												$$ = $1;
 											} else {
@@ -496,7 +486,7 @@ Term_recursive						:	/* Epsilon */
 									|	TIMESnum Factor Term_recursive
 										{
 											//$$ = MakeTree(MultOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(MultOp, NullExp(), $2);
 											} else {
@@ -507,7 +497,7 @@ Term_recursive						:	/* Epsilon */
 									|	DIVIDEnum Factor Term_recursive
 										{
 											//$$ = MakeTree(DivOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(DivOp, NullExp(), $2);
 											} else {
@@ -518,7 +508,7 @@ Term_recursive						:	/* Epsilon */
 									|	ANDnum Factor Term_recursive
 										{
 											//$$ = MakeTree(AndOp, $3, $2);
-											if($2 == NullExp())
+											if($3 == NullExp())
 											{
 												$$ = MakeTree(AndOp, NullExp(), $2);
 											} else {
@@ -582,7 +572,7 @@ Variable_expression					:	Expression
 										}
 									|	Expression COMMAnum Variable_expression
 										{
-											$$ = MakeTree(IndexOp, $1, $3);;
+											$$ = MakeTree(IndexOp, $1, $3);
 										};
 
 %% /* C code */
